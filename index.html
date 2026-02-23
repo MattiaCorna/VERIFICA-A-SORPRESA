@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API REST - Slim Framework</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .endpoint { background: #f9f9f9; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; border-radius: 4px; }
+        .endpoint-num { color: #007bff; font-weight: bold; }
+        .url { background: #e9ecef; padding: 8px 12px; border-radius: 4px; font-family: monospace; margin: 5px 0; }
+        button { background: #007bff; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-top: 8px; }
+        button:hover { background: #0056b3; }
+        .result { background: #f0f0f0; padding: 10px; margin-top: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 API REST - Slim Framework</h1>
+        <p>Endpoint numerati da 1 a 10 per il database Fornitori/Pezzi/Catalogo</p>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 1</span>
+            <p>Trovare i pnome dei pezzi per cui esiste un qualche fornitore</p>
+            <div class="url">GET /api/1</div>
+            <button onclick="testEndpoint(1)">Testa</button>
+            <div id="result1" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 2</span>
+            <p>Trovare gli fnome dei fornitori che forniscono ogni pezzo</p>
+            <div class="url">GET /api/2</div>
+            <button onclick="testEndpoint(2)">Testa</button>
+            <div id="result2" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 3</span>
+            <p>Trovare gli fnome dei fornitori che forniscono tutti i pezzi rossi</p>
+            <div class="url">GET /api/3</div>
+            <button onclick="testEndpoint(3)">Testa</button>
+            <div id="result3" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 4</span>
+            <p>Trovare i pnome dei pezzi forniti dalla Acme e da nessun altro</p>
+            <div class="url">GET /api/4</div>
+            <button onclick="testEndpoint(4)">Testa</button>
+            <div id="result4" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 5</span>
+            <p>Trovare i fid dei fornitori che ricaricano su alcuni pezzi più del costo medio</p>
+            <div class="url">GET /api/5</div>
+            <button onclick="testEndpoint(5)">Testa</button>
+            <div id="result5" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 6</span>
+            <p>Trovare gli fnome dei fornitori che forniscono tutti i pezzi</p>
+            <div class="url">GET /api/6</div>
+            <button onclick="testEndpoint(6)">Testa</button>
+            <div id="result6" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 7</span>
+            <p>Trovare il costo medio di ogni pezzo</p>
+            <div class="url">GET /api/7</div>
+            <button onclick="testEndpoint(7)">Testa</button>
+            <div id="result7" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 8</span>
+            <p>Trovare i pezzi più costosi</p>
+            <div class="url">GET /api/8</div>
+            <button onclick="testEndpoint(8)">Testa</button>
+            <div id="result8" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 9</span>
+            <p>Trovare il numero di fornitori per ogni pezzo</p>
+            <div class="url">GET /api/9</div>
+            <button onclick="testEndpoint(9)">Testa</button>
+            <div id="result9" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <span class="endpoint-num">Endpoint 10</span>
+            <p>Trovare tutti i fornitori con i loro pezzi</p>
+            <div class="url">GET /api/10</div>
+            <button onclick="testEndpoint(10)">Testa</button>
+            <div id="result10" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testEndpoint(num) {
+            const resultDiv = document.getElementById(`result${num}`);
+            resultDiv.textContent = 'Caricamento...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/api/${num}`);
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = `Errore: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
