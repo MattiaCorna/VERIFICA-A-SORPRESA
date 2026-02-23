@@ -12,28 +12,64 @@ use Slim\Factory\AppFactory;
 
 $app = AppFactory::create();
 
-// Dati mock per il testing
+// Dati mock per il testing (sincronizzati con database.sql)
 $mockData = [
     'fornitori' => [
-        ['fid' => 'F01', 'fnome' => 'Acme', 'indirizzo' => 'Via Roma 1'],
-        ['fid' => 'F02', 'fnome' => 'WidgetCorp', 'indirizzo' => 'Via Milano 2'],
-        ['fid' => 'F03', 'fnome' => 'Supplies Inc', 'indirizzo' => 'Via Torino 3'],
+        ['fid' => 'F01', 'fnome' => 'Acme', 'indirizzo' => 'Via Roma 1, Milano'],
+        ['fid' => 'F02', 'fnome' => 'WidgetCorp', 'indirizzo' => 'Via Milano 2, Torino'],
+        ['fid' => 'F03', 'fnome' => 'Supplies Inc', 'indirizzo' => 'Via Torino 3, Genova'],
+        ['fid' => 'F04', 'fnome' => 'TechParts', 'indirizzo' => 'Via Venezia 4, Venezia'],
+        ['fid' => 'F05', 'fnome' => 'MegaSupplies', 'indirizzo' => 'Via Napoli 5, Napoli'],
+        ['fid' => 'F06', 'fnome' => 'GreenTech', 'indirizzo' => 'Via Palermo 6, Palermo'],
     ],
     'pezzi' => [
         ['pid' => 'P01', 'pnome' => 'Bullone', 'colore' => 'rosso'],
         ['pid' => 'P02', 'pnome' => 'Vite', 'colore' => 'blu'],
         ['pid' => 'P03', 'pnome' => 'Dado', 'colore' => 'rosso'],
         ['pid' => 'P04', 'pnome' => 'Rivetto', 'colore' => 'verde'],
+        ['pid' => 'P05', 'pnome' => 'Molla', 'colore' => 'blu'],
+        ['pid' => 'P06', 'pnome' => 'Guarnizione', 'colore' => 'rosso'],
+        ['pid' => 'P07', 'pnome' => 'Cuscinetto', 'colore' => 'verde'],
+        ['pid' => 'P08', 'pnome' => 'Cavo', 'colore' => 'blu'],
+        ['pid' => 'P09', 'pnome' => 'Resistore', 'colore' => 'rosso'],
+        ['pid' => 'P10', 'pnome' => 'Condensatore', 'colore' => 'verde'],
     ],
     'catalogo' => [
+        // Acme (F01): TUTTI P01-P10
         ['fid' => 'F01', 'pid' => 'P01', 'costo' => 10.5],
         ['fid' => 'F01', 'pid' => 'P02', 'costo' => 5.0],
         ['fid' => 'F01', 'pid' => 'P03', 'costo' => 8.5],
+        ['fid' => 'F01', 'pid' => 'P04', 'costo' => 6.0],
+        ['fid' => 'F01', 'pid' => 'P05', 'costo' => 7.2],
+        ['fid' => 'F01', 'pid' => 'P06', 'costo' => 9.0],
+        ['fid' => 'F01', 'pid' => 'P07', 'costo' => 12.0],
+        ['fid' => 'F01', 'pid' => 'P08', 'costo' => 4.5],
+        ['fid' => 'F01', 'pid' => 'P09', 'costo' => 15.0],
+        ['fid' => 'F01', 'pid' => 'P10', 'costo' => 8.5],
+        
+        // WidgetCorp (F02): TUTTI P01-P10
+        ['fid' => 'F02', 'pid' => 'P04', 'costo' => 6.8],
+        ['fid' => 'F02', 'pid' => 'P05', 'costo' => 7.1],
+        ['fid' => 'F02', 'pid' => 'P06', 'costo' => 8.8],
         ['fid' => 'F02', 'pid' => 'P01', 'costo' => 11.0],
-        ['fid' => 'F02', 'pid' => 'P03', 'costo' => 7.5],
-        ['fid' => 'F02', 'pid' => 'P04', 'costo' => 6.0],
+        ['fid' => 'F02', 'pid' => 'P02', 'costo' => 5.2],
+        ['fid' => 'F02', 'pid' => 'P03', 'costo' => 8.2],
+        ['fid' => 'F02', 'pid' => 'P07', 'costo' => 11.5],
+        ['fid' => 'F02', 'pid' => 'P08', 'costo' => 4.2],
+        ['fid' => 'F02', 'pid' => 'P09', 'costo' => 16.0],
+        ['fid' => 'F02', 'pid' => 'P10', 'costo' => 9.2],
+        
+        // Supplies Inc (F03): TUTTI P01-P10
+        ['fid' => 'F03', 'pid' => 'P07', 'costo' => 13.0],
+        ['fid' => 'F03', 'pid' => 'P08', 'costo' => 3.9],
+        ['fid' => 'F03', 'pid' => 'P09', 'costo' => 15.0],
+        ['fid' => 'F03', 'pid' => 'P10', 'costo' => 10.0],
+        ['fid' => 'F03', 'pid' => 'P01', 'costo' => 9.8],
         ['fid' => 'F03', 'pid' => 'P02', 'costo' => 4.5],
-        ['fid' => 'F03', 'pid' => 'P04', 'costo' => 6.5],
+        ['fid' => 'F03', 'pid' => 'P03', 'costo' => 8.2],
+        ['fid' => 'F03', 'pid' => 'P04', 'costo' => 5.8],
+        ['fid' => 'F03', 'pid' => 'P05', 'costo' => 6.8],
+        ['fid' => 'F03', 'pid' => 'P06', 'costo' => 8.5],
     ]
 ];
 
