@@ -167,13 +167,18 @@ WHERE NOT EXISTS (
 );
 
 /* 7) Trovare i fid dei fornitori che forniscono SOLO pezzi rossi */
-SELECT DISTINCT c.fid
-FROM Catalogo c
-WHERE NOT EXISTS (
+SELECT f.fid
+FROM Fornitori f
+WHERE EXISTS (
+  SELECT 1
+  FROM Catalogo c
+  WHERE c.fid = f.fid
+)
+AND NOT EXISTS (
   SELECT 1
   FROM Catalogo c2
   JOIN Pezzi p2 ON p2.pid = c2.pid
-  WHERE c2.fid = c.fid
+  WHERE c2.fid = f.fid
     AND p2.colore <> 'rosso'
 );
 

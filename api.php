@@ -288,194 +288,186 @@ $app->get('/api/5', function (Request $request, Response $response) {
     }
 });
 
-// ENDPOINT 6: Fornitori con tutti i pezzi
+// ENDPOINT 6: Per ciascun pezzo, fornitori con costo massimo su quel pezzo
 $app->get('/api/6', function (Request $request, Response $response) {
     try {
         $data = getMockDB();
         $result = [];
         
-        foreach ($data['fornitori'] as $fornitore) {
-            $num_pezzi = 0;
-            
-            foreach ($data['catalogo'] as $cat) {
-                if ($cat['fid'] === $fornitore['fid']) {
-                    $num_pezzi++;
-                }
-            }
-            
-            if ($num_pezzi === count($data['pezzi'])) {
-                $result[] = ['fnome' => $fornitore['fnome']];
-            }
-        }
-        
-        $response->getBody()->write(json_encode($result));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    } catch (Exception $e) {
-        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-});
-
-// ENDPOINT 7: Costo medio per pezzo
-$app->get('/api/7', function (Request $request, Response $response) {
-    try {
-        $data = getMockDB();
-        $params = $request->getQueryParams();
-        $color = $params['color'] ?? null;
-        $sort = strtoupper($params['sort'] ?? 'ASC');
-        $limit = (int)($params['limit'] ?? 1000);
-        
-        $result = [];
-        
         foreach ($data['pezzi'] as $pezzo) {
-            if ($color && $pezzo['colore'] !== $color) {
+            $righe_pezzo = array_values(array_filter($data['catalogo'], fn($c) => $c['pid'] === $pezzo['pid']));
+            if (empty($righe_pezzo)) {
                 continue;
             }
-            
-            $costi = array_filter($data['catalogo'], fn($c) => $c['pid'] === $pezzo['pid']);
-            if (!empty($costi)) {
-                $media = array_sum(array_column($costi, 'costo')) / count($costi);
-                $result[] = [
-                    'pnome' => $pezzo['pnome'],
-                    'colore' => $pezzo['colore'],
-                    'costo_medio' => round($media, 2),
-                    'num_fornitori' => count($costi)
-                ];
-            }
-        }
-        
-        usort($result, function($a, $b) use ($sort) {
-            if ($sort === 'DESC') {
-                return $b['costo_medio'] <=> $a['costo_medio'];
-            }
-            return $a['costo_medio'] <=> $b['costo_medio'];
-        });
-        
-        $result = array_slice($result, 0, $limit);
-        $response->getBody()->write(json_encode($result));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    } catch (Exception $e) {
-        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-});
 
-// ENDPOINT 8: Pezzi più costosi
-$app->get('/api/8', function (Request $request, Response $response) {
-    try {
-        $data = getMockDB();
-        $params = $request->getQueryParams();
-        $color = $params['color'] ?? null;
-        $limit = (int)($params['limit'] ?? 10);
-        $minPrice = (float)($params['min_price'] ?? 0);
-        
-        $result = [];
-        
-        foreach ($data['pezzi'] as $pezzo) {
-            if ($color && $pezzo['colore'] !== $color) {
-                continue;
-            }
-            
-            $costi = array_filter($data['catalogo'], fn($c) => $c['pid'] === $pezzo['pid']);
-            if (!empty($costi)) {
-                $max_costo = max(array_column($costi, 'costo'));
-                if ($max_costo >= $minPrice) {
-                    $result[] = [
-                        'pnome' => $pezzo['pnome'],
-                        'colore' => $pezzo['colore'],
-                        'costo_massimo' => $max_costo
-                    ];
-                }
-            }
-        }
-        
-        usort($result, fn($a, $b) => $b['costo_massimo'] <=> $a['costo_massimo']);
-        $result = array_slice($result, 0, $limit);
-        
-        $response->getBody()->write(json_encode($result));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    } catch (Exception $e) {
-        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-});
+            $maxCosto = max(array_column($righe_pezzo, 'costo'));
 
-// ENDPOINT 9: Numero fornitori per pezzo
-$app->get('/api/9', function (Request $request, Response $response) {
-    try {
-        $data = getMockDB();
-        $params = $request->getQueryParams();
-        $color = $params['color'] ?? null;
-        $minSuppliers = (int)($params['min_suppliers'] ?? 0);
-        
-        $result = [];
-        
-        foreach ($data['pezzi'] as $pezzo) {
-            if ($color && $pezzo['colore'] !== $color) {
-                continue;
-            }
-            
-            $num_fornitori = count(array_filter($data['catalogo'], fn($c) => $c['pid'] === $pezzo['pid']));
-            
-            if ($num_fornitori >= $minSuppliers) {
-                $result[] = [
-                    'pnome' => $pezzo['pnome'],
-                    'colore' => $pezzo['colore'],
-                    'num_fornitori' => $num_fornitori
-                ];
-            }
-        }
-        
-        usort($result, fn($a, $b) => $b['num_fornitori'] <=> $a['num_fornitori']);
-        
-        $response->getBody()->write(json_encode($result));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    } catch (Exception $e) {
-        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-});
-
-// ENDPOINT 10: Fornitori con lista pezzi
-$app->get('/api/10', function (Request $request, Response $response) {
-    try {
-        $data = getMockDB();
-        $params = $request->getQueryParams();
-        $supplier = $params['supplier'] ?? null;
-        $color = $params['color'] ?? null;
-        
-        $result = [];
-        
-        foreach ($data['fornitori'] as $fornitore) {
-            if ($supplier && $fornitore['fnome'] !== $supplier) {
-                continue;
-            }
-            
-            $pezzi = [];
-            $num_pezzi = 0;
-            
-            foreach ($data['catalogo'] as $cat) {
-                if ($cat['fid'] === $fornitore['fid']) {
-                    foreach ($data['pezzi'] as $p) {
-                        if ($p['pid'] === $cat['pid']) {
-                            if (!$color || $p['colore'] === $color) {
-                                $pezzi[] = $p['pnome'] . ' (' . $p['colore'] . ')';
-                                $num_pezzi++;
-                            }
+            foreach ($righe_pezzo as $cat) {
+                if ($cat['costo'] === $maxCosto) {
+                    $fornitore = null;
+                    foreach ($data['fornitori'] as $f) {
+                        if ($f['fid'] === $cat['fid']) {
+                            $fornitore = $f;
                             break;
                         }
                     }
+
+                    if ($fornitore) {
+                        $result[] = [
+                            'pid' => $pezzo['pid'],
+                            'pnome' => $pezzo['pnome'],
+                            'fnome' => $fornitore['fnome'],
+                            'costo' => $cat['costo']
+                        ];
+                    }
                 }
             }
-            
-            $result[] = [
-                'fnome' => $fornitore['fnome'],
-                'fid' => $fornitore['fid'],
-                'pezzi' => implode(', ', $pezzi),
-                'num_pezzi' => $num_pezzi
-            ];
         }
         
+        $response->getBody()->write(json_encode($result));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+});
+
+// ENDPOINT 7: Fornitori che forniscono SOLO pezzi rossi
+$app->get('/api/7', function (Request $request, Response $response) {
+    try {
+        $data = getMockDB();
+        $result = [];
+
+        foreach ($data['fornitori'] as $fornitore) {
+            $forniture = array_values(array_filter($data['catalogo'], fn($c) => $c['fid'] === $fornitore['fid']));
+            if (empty($forniture)) {
+                continue;
+            }
+
+            $soloRossi = true;
+            foreach ($forniture as $cat) {
+                $pezzo = null;
+                foreach ($data['pezzi'] as $p) {
+                    if ($p['pid'] === $cat['pid']) {
+                        $pezzo = $p;
+                        break;
+                    }
+                }
+
+                if (!$pezzo || $pezzo['colore'] !== 'rosso') {
+                    $soloRossi = false;
+                    break;
+                }
+            }
+
+            if ($soloRossi) {
+                $result[] = ['fid' => $fornitore['fid']];
+            }
+        }
+
+        $response->getBody()->write(json_encode($result));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+});
+
+// ENDPOINT 8: Fornitori che forniscono un pezzo rosso E uno verde
+$app->get('/api/8', function (Request $request, Response $response) {
+    try {
+        $data = getMockDB();
+        $result = [];
+
+        foreach ($data['fornitori'] as $fornitore) {
+            $haRosso = false;
+            $haVerde = false;
+
+            foreach ($data['catalogo'] as $cat) {
+                if ($cat['fid'] !== $fornitore['fid']) {
+                    continue;
+                }
+
+                foreach ($data['pezzi'] as $p) {
+                    if ($p['pid'] === $cat['pid']) {
+                        if ($p['colore'] === 'rosso') {
+                            $haRosso = true;
+                        }
+                        if ($p['colore'] === 'verde') {
+                            $haVerde = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if ($haRosso && $haVerde) {
+                $result[] = ['fid' => $fornitore['fid']];
+            }
+        }
+
+        $response->getBody()->write(json_encode($result));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+});
+
+// ENDPOINT 9: Fornitori che forniscono un pezzo rosso O uno verde
+$app->get('/api/9', function (Request $request, Response $response) {
+    try {
+        $data = getMockDB();
+        $result = [];
+
+        foreach ($data['fornitori'] as $fornitore) {
+            $trovato = false;
+
+            foreach ($data['catalogo'] as $cat) {
+                if ($cat['fid'] !== $fornitore['fid']) {
+                    continue;
+                }
+
+                foreach ($data['pezzi'] as $p) {
+                    if ($p['pid'] === $cat['pid'] && ($p['colore'] === 'rosso' || $p['colore'] === 'verde')) {
+                        $trovato = true;
+                        break 2;
+                    }
+                }
+            }
+
+            if ($trovato) {
+                $result[] = ['fid' => $fornitore['fid']];
+            }
+        }
+
+        $response->getBody()->write(json_encode($result));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } catch (Exception $e) {
+        $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+});
+
+// ENDPOINT 10: Pezzi forniti da almeno due fornitori
+$app->get('/api/10', function (Request $request, Response $response) {
+    try {
+        $data = getMockDB();
+        $result = [];
+
+        foreach ($data['pezzi'] as $pezzo) {
+            $fornitoriPid = [];
+            foreach ($data['catalogo'] as $cat) {
+                if ($cat['pid'] === $pezzo['pid']) {
+                    $fornitoriPid[$cat['fid']] = true;
+                }
+            }
+
+            if (count($fornitoriPid) >= 2) {
+                $result[] = ['pid' => $pezzo['pid']];
+            }
+        }
+
         $response->getBody()->write(json_encode($result));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     } catch (Exception $e) {
@@ -494,11 +486,11 @@ $app->get('/', function (Request $request, Response $response) {
             '/api/3' => 'Fornitori con pezzi di colore specificato',
             '/api/4' => 'Pezzi forniti da un fornitore in esclusiva',
             '/api/5' => 'Fornitori con costo sopra media',
-            '/api/6' => 'Fornitori con tutti i pezzi',
-            '/api/7' => 'Costo medio per pezzo',
-            '/api/8' => 'Pezzi più costosi',
-            '/api/9' => 'Numero fornitori per pezzo',
-            '/api/10' => 'Fornitori con lista pezzi'
+            '/api/6' => 'Per ciascun pezzo, fornitori con costo massimo',
+            '/api/7' => 'Fornitori che forniscono solo pezzi rossi',
+            '/api/8' => 'Fornitori che forniscono un pezzo rosso e uno verde',
+            '/api/9' => 'Fornitori che forniscono un pezzo rosso o uno verde',
+            '/api/10' => 'Pezzi forniti da almeno due fornitori'
         ]
     ];
     $response->getBody()->write(json_encode($data, JSON_PRETTY_PRINT));
